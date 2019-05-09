@@ -375,7 +375,6 @@ export default {
 
       validateFields(['name', 'sex', 'age', 'gradeId', 'classIds', 'studentTel', 'parentTel', 'address'], { force: true }, (err, values) => {
         if (err) return
-        console.log(values.classIds)
         const params = {
           ...this.formData,
           ...values,

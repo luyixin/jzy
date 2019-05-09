@@ -260,12 +260,12 @@ export default {
       validateFields(arr, { force: true }, (err, values) => {
         if (err) return
         const params = {
+          ...this.formData,
           ...values,
           feesVO: {
             price: values.price,
             collectName: values.collectName
           },
-          ...this.formData,
           stuType: this.stuType
         }
         this.advisoryId && (params.consultId = this.advisoryId)
