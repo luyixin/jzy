@@ -9,6 +9,7 @@ export const routes = [
     path: '/',
     name: 'App',
     component: () => import('@/App'),
+    redirect: () => !window.localStorage.getItem('userInfo') && '/login',
     children: [
       {
         path: '/login',
