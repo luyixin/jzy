@@ -6,6 +6,9 @@
       <span slot="sex" slot-scope="text, record">
         {{ record.sex === '1' ? '男' : '女' }}
       </span>
+      <span slot="gradeVo" slot-scope="text, record">
+        {{ record.gradeVo.name }}
+      </span>
       <span slot="classList" slot-scope="text, record">
         {{ record.classList.map(a => a.name).join(',') }}
       </span>
@@ -110,9 +113,9 @@ const columns = [
   },
   {
     title: '年级',
-    dataIndex: 'grade',
     align: 'center',
-    key: 'grade'
+    key: 'gradeVo',
+    scopedSlots: { customRender: 'gradeVo' }
   },
   {
     title: '班级',
@@ -185,6 +188,7 @@ export default {
       this.getStudentList()
     },
     changeGradeId (gradeId) {
+      this.formData.gradeId !== gradeId && this.form.setFieldsValue({ classIds: [] })
       this.getAllClassList(gradeId)
     },
     getConsult () {
@@ -235,6 +239,7 @@ export default {
       this.showChange = true
       this.formData = { id }
       getStudentSingle({ studentId: id }).then(({ data }) => {
+        this.formData.gradeId = data.gradeId
         this.form.setFieldsValue({ name: data.name })
         this.form.setFieldsValue({ sex: data.sex })
         this.form.setFieldsValue({ age: data.age })

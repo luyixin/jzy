@@ -6,6 +6,9 @@
       <span slot="sex" slot-scope="text, record">
         {{ record.sex === '1' ? '男' : '女' }}
       </span>
+      <span slot="gradeVo" slot-scope="text, record">
+        {{ record.gradeVo.name }}
+      </span>
       <span slot="classList" slot-scope="text, record">
         {{ record.classList.map(a => a.name).join(',') }}
       </span>
@@ -94,7 +97,7 @@
             ]"/>
         </a-form-item>
         <a-form-item label="选择年级" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-          <a-select placeholder="请选择年级" @change="changeGradeId"
+          <a-select placeholder="请选择年级" @change="changeFormalGradeId"
             v-decorator="[
               'gradeId',
               {rules: [{ required: true, message: '请选择年级' }]}
@@ -161,9 +164,9 @@ const columns = [
   },
   {
     title: '年级',
-    dataIndex: 'grade',
     align: 'center',
-    key: 'grade'
+    key: 'gradeVo',
+    scopedSlots: { customRender: 'gradeVo' }
   },
   {
     title: '班级',
@@ -271,6 +274,11 @@ export default {
       this.getStudentList()
     },
     changeGradeId (gradeId) {
+      this.formData.gradeId !== gradeId && this.form.setFieldsValue({ classIds: [] })
+      this.getAllClassList(gradeId)
+    },
+    changeFormalGradeId (gradeId) {
+      this.formData.gradeId !== gradeId && this.formFormal.setFieldsValue({ classIds: [] })
       this.getAllClassList(gradeId)
     },
     getConsult () {
@@ -290,9 +298,10 @@ export default {
         this.gradeList = res.data
       })
     },
-    getAllClassList (gradeId) {
+    getAllClassList (gradeId, cb = () => {}) {
       getAllClassList({ gradeId }).then(res => {
         this.classList = res.data
+        cb()
       })
     },
     getStudentList () {
@@ -316,8 +325,8 @@ export default {
     },
     openFormal (student) {
       this.showFormal = true
-      this.formData = { id: student.id }
-      this.$nextTick(() => {
+      this.formData = { id: student.id, gradeId: student.gradeId }
+      this.getAllClassList(student.gradeId, () => {
         this.formFormal.setFieldsValue({ gradeId: student.gradeId })
         this.formFormal.setFieldsValue({ classIds: student.classList.map(a => a.id) })
       })
@@ -328,13 +337,13 @@ export default {
       validateFields(['price', 'collectName', 'gradeId', 'classIds'], { force: true }, (err, values) => {
         if (err) return
         saveStudent({
+          ...this.formData,
           gradeId: values.gradeId,
           classIds: values.classIds,
           feesVO: {
             price: values.price,
             collectName: values.collectName
           },
-          ...this.formData,
           stuType: '100100002'
         }).then(res => {
           this.showFormal = false
@@ -348,6 +357,7 @@ export default {
       this.showChange = true
       this.formData = { id }
       getStudentSingle({ studentId: id }).then(({ data }) => {
+        this.formData.gradeId = data.gradeId
         this.form.setFieldsValue({ name: data.name })
         this.form.setFieldsValue({ sex: data.sex })
         this.form.setFieldsValue({ age: data.age })
@@ -367,8 +377,8 @@ export default {
         if (err) return
         console.log(values.classIds)
         const params = {
-          ...values,
           ...this.formData,
+          ...values,
           stuType: this.stuType
         }
         this.advisoryId && (params.consultId = this.advisoryId)
